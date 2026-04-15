@@ -84,6 +84,18 @@ def to_one_hots(y, categories):
         y_ = y_.cuda()
     return y_
 
+def compare_point_clouds(pc1, pc2):
+    fig = plt.figure(figsize=(10,5))
+
+    ax1 = fig.add_subplot(121, projection='3d')
+    ax1.scatter(pc1[:,0], pc1[:,1], pc1[:,2], s=5)
+    ax1.set_title("Input")
+
+    ax2 = fig.add_subplot(122, projection='3d')
+    ax2.scatter(pc2[:,0], pc2[:,1], pc2[:,2], s=5)
+    ax2.set_title("Reconstruction")
+
+    plt.show()
 
 if __name__ == '__main__':
     pcs = torch.rand(32, 3, 1024)
