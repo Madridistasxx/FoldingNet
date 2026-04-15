@@ -78,9 +78,10 @@ class Encoder(nn.Module):
         x = self.graph_layer1(x)
         x = self.graph_layer2(x)
 
-        x = self.bn4(self.conv4(x))
+        x = self.bn4(self.conv4(x))  # (B, 512, N)
 
-        x = torch.max(x, dim=-1)[0]
+        # global max pooling
+        x = torch.max(x, dim=-1)[0]  # (B, 512)
         return x
 
 
@@ -106,9 +107,8 @@ class FoldingLayer(nn.Module):
 
     def forward(self, grids, codewords):
         """
-        Parameters
-        ----------
-            grids: reshaped 2D grids or intermediam reconstructed point clouds
+        grids: (B, 2 or 3, M)
+        codewords: (B, C, M)
         """
         # concatenate
         x = torch.cat([grids, codewords], dim=1)
@@ -130,6 +130,7 @@ class Decoder(nn.Module):
         xx = np.linspace(-0.3, 0.3, 45, dtype=np.float32)
         yy = np.linspace(-0.3, 0.3, 45, dtype=np.float32)
         self.grid = np.meshgrid(xx, yy)   # (2, 45, 45)
+        self.grid = np.array(self.grid)
 
         # reshape
         self.grid = torch.Tensor(self.grid).view(2, -1)  # (2, 45, 45) -> (2, 45 * 45)
@@ -153,8 +154,8 @@ class Decoder(nn.Module):
         x = x.unsqueeze(2).repeat(1, 1, self.m)            # (B, 512, 45 * 45)
         
         # two folding operations
-        recon1 = self.fold1(grid, x)
-        recon2 = self.fold2(recon1, x)
+        recon1 = self.fold1(grid, x)                       # (B, 3, M)
+        recon2 = self.fold2(recon1, x)                     # (B, 3, M)
         
         return recon2
 
